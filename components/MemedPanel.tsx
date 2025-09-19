@@ -41,12 +41,15 @@ export default function MemedPanel({ token }: { token: string }) {
             const MdSinapsePrescricao = window.MdSinapsePrescricao;
             const MdHub = window.MdHub;
 
-            if (MdSinapsePrescricao) {
+            // Certifica-se de que ambas as variáveis existem antes de usá-las
+            if (MdSinapsePrescricao && MdHub) {
                 MdSinapsePrescricao.event.add('core:moduleInit', (module: MemedModule) => {
                     if (module.name === 'plataforma.prescricao') {
                         MdHub.module.show('plataforma.prescricao');
                     }
                 });
+            } else {
+                console.error("Variáveis globais da Memed não foram carregadas.");
             }
         });
 
