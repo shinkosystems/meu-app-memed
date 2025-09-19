@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* O restante dos estilos da sua aplicação podem ser adicionados aqui */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
