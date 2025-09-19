@@ -7,11 +7,19 @@ type MemedModule = {
     name: string;
 };
 
-// Define um tipo para o objeto global MdHub
+// Declaração de tipos para as variáveis globais da Memed
 declare global {
     interface Window {
-        MdSinapsePrescricao: any; // Usamos 'any' aqui pois é uma variável global
-        MdHub: any; // Usamos 'any' aqui pois é uma variável global
+        MdSinapsePrescricao: {
+            event: {
+                add: (eventName: string, callback: (module: MemedModule) => void) => void;
+            };
+        };
+        MdHub: {
+            module: {
+                show: (moduleName: string) => void;
+            };
+        };
     }
 }
 
