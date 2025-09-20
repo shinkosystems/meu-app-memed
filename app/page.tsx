@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "./login/submit-button";
+import Image from "next/image";
 
 export default async function Login({
     searchParams,
@@ -9,7 +10,7 @@ export default async function Login({
     searchParams: { message?: string };
 }) {
     // Funções server actions
-    async function signIn(formData: FormData) {
+    const signIn = async (formData: FormData) => {
         "use server";
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
@@ -20,7 +21,7 @@ export default async function Login({
         return redirect("/account");
     }
 
-    async function signUp(formData: FormData) {
+    const signUp = async (formData: FormData) => {
         "use server";
         const origin = (await headers()).get("origin");
         const email = formData.get("email") as string;
@@ -41,10 +42,12 @@ export default async function Login({
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center w-full max-w-md">
                 {/* Logo */}
-                <img
+                <Image
                     src="https://dppyplipgqxgbovndyqw.supabase.co/storage/v1/object/public/perfil/perfil/Logo%20FA.png"
                     alt="Logo da Empresa"
-                    className="max-w-[320px] max-h-[200px] object-contain mb-8"
+                    width={320}
+                    height={200}
+                    className="object-contain mb-8"
                 />
 
                 <form className="w-full flex flex-col items-center gap-4 text-gray-800">

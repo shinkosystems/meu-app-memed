@@ -59,6 +59,8 @@ export default function Login({
                     <img
                         src="https://dppyplipgqxgbovndyqw.supabase.co/storage/v1/object/public/perfil/perfil/Logo%20FA.png"
                         alt="Logo da Empresa"
+                        width={320}
+                        height={200}
                         className="w-40" // Ajuste o tamanho da imagem conforme necessário
                     />
                 </div>

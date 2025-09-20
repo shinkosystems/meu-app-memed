@@ -2,7 +2,24 @@
 
 import { useEffect } from 'react';
 
-export default function MemedPanel({ token }) {
+// Define a interface para o objeto global 'window' para evitar erros do TypeScript
+// Isso informa ao TypeScript que as propriedades MdSinapsePrescricao e MdHub existem
+declare global {
+    interface Window {
+        MdSinapsePrescricao?: {
+            event: {
+                add: (eventName: string, callback: (module: { name: string }) => void) => void;
+            };
+        };
+        MdHub?: {
+            module: {
+                show: (moduleName: string) => void;
+            };
+        };
+    }
+}
+
+export default function MemedPanel({ token }: { token: string }) {
     useEffect(() => {
         if (!token) return;
 
@@ -22,12 +39,12 @@ export default function MemedPanel({ token }) {
         // Adiciona o evento de 'load' para executar o comando
         script.addEventListener('load', () => {
             // Certifica-se de que o MdSinapsePrescricao está disponível globalmente
-            if (typeof (window as any).MdSinapsePrescricao !== 'undefined') {
+            if (typeof window.MdSinapsePrescricao !== 'undefined') {
                 // Espera o evento de inicialização do módulo
-                (window as any).MdSinapsePrescricao.event.add('core:moduleInit', (module: any) => {
+                window.MdSinapsePrescricao.event.add('core:moduleInit', (module: { name: string }) => {
                     if (module.name === 'plataforma.prescricao') {
                         // Envia o comando para mostrar o painel no contêiner
-                        (window as any).MdHub.module.show('plataforma.prescricao');
+                        window.MdHub?.module.show('plataforma.prescricao');
                     }
                 });
             }
@@ -45,5 +62,6 @@ export default function MemedPanel({ token }) {
         };
     }, [token]);
 
-    return null; // Este componente não renderiza nada diretamente
+    // Retorna um div que servirá de contêiner para o painel da Memed
+    return <div id="memed-container"></div>;
 }
