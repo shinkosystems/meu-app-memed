@@ -1,73 +1,87 @@
+// actions/memed.ts
+
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
-import { v4 as uuidv4 } from 'uuid';
+import { NextResponse } from 'next/server';
 
 export async function getMemedToken() {
+    // 1. Autenticação e Obtenção do Usuário Supabase
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return { error: 'User not authenticated' };
+        return { token: null, error: 'User not authenticated' };
     }
 
-    // Verifica se o ambiente de produção está ativo
+    // 2. Acesso às Variáveis de Ambiente da Memed
     const isProduction = process.env.NODE_ENV === 'production';
-    
-    const baseUrl = isProduction
-        ? process.env.MEMED_API_BASE_URL + '/sinapse-prescricao/usuarios' // Ou o nome que você usou para a URL de produção
-        : process.env.MEMED_API_BASE_URL + '/sinapse-prescricao/usuarios';
 
-    const apiKey = isProduction
-        ? process.env.NEXT_PUBLIC_MEMED_API_KEY_PRODUCTION!
-        : process.env.NEXT_PUBLIC_MEMED_API_KEY_HOMOLOGATION!;
+    const memedApiUrl = isProduction
+        ? process.env.NEXT_PUBLIC_MEMED_API_URL_PRODUCTION
+        : process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION;
 
-    const secretKey = isProduction
-        ? process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_PRODUCTION!
-        : process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_HOMOLOGATION!;
+    const memedApiKey = isProduction
+        ? process.env.NEXT_PUBLIC_API_KEY_PRODUCTION
+        : process.env.NEXT_PUBLIC_API_KEY_HOMOLOGATION;
 
-    const url = new URL(baseUrl);
-    url.searchParams.append('api-key', apiKey);
-    url.searchParams.append('secret-key', secretKey);
+    const memedSecretKey = isProduction
+        ? process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_PRODUCTION
+        : process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_HOMOLOGATION;
 
-    const payload = {
-        data: {
-            type: 'usuarios',
-            attributes: {
-                external_id: uuidv4(),
-                nome: 'Nome de Exemplo',
-                sobrenome: 'Sobrenome de Exemplo',
-                board: {
-                    board_code: 'CRM',
-                    board_number: Math.floor(Math.random() * 900000) + 100000,
-                    board_state: 'SP',
-                },
-            },
-        },
-    };
+
+    if (!memedApiUrl || !memedApiKey || !memedSecretKey) {
+        console.error("Missing Memed API environment variables");
+        return { token: null, error: 'Missing Memed API environment variables' };
+    }
 
     try {
-        const response = await fetch(url.toString(), {
+        // 3. Montagem do Payload para a Requisição da Memed
+        const payload = {
+            data: {
+                type: 'usuarios',
+                attributes: {
+                    external_id: user.id,
+                    nome: user.user_metadata.full_name || 'Usuário de Exemplo',
+                    board: {
+                        board_code: 'CRM',
+                        board_number: Math.floor(Math.random() * 900000) + 100000,
+                        board_state: 'SP',
+                    },
+                },
+            },
+        };
+
+        // 4. Requisição à API da Memed
+        const response = await fetch(`${memedApiUrl}/sinapse-prescricao/usuarios`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/vnd.api+json',
-                'Cache-Control': 'no-cache',
+                'X-API-KEY': memedApiKey,
+                'X-SECRET-KEY': memedSecretKey,
             },
             body: JSON.stringify(payload),
         });
 
+        // 5. Tratamento da Resposta
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Erro na requisição da Memed:', response.status, errorText);
+            return { token: null, error: 'Failed to get Memed token from API' };
+        }
+
         const data = await response.json();
 
-        if (response.ok && data.data?.attributes?.token) {
-            console.log('Usuário cadastrado na Memed:', data);
-            return { token: data.data.attributes.token };
+        if (data.data?.attributes?.token) {
+            const memedToken = data.data.attributes.token;
+            return { token: memedToken, error: null };
         } else {
-            console.error('Erro na resposta da Memed:', data);
-            return { error: 'Failed to get Memed token' };
+            console.error('Erro na resposta da Memed: Token não encontrado', data);
+            return { token: null, error: 'Failed to get Memed token from API' };
         }
     } catch (error) {
         console.error('Erro na requisição para a Memed:', error);
-        return { error: 'Failed to get Memed token' };
+        return { token: null, error: 'An unexpected error occurred' };
     }
 }
