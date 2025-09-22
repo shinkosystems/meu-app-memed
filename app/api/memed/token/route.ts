@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
     // 1. Autenticação e Obtenção do Usuário Supabase
-    // O 'await' é crucial aqui para esperar que o cliente seja criado antes de usá-lo.
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -15,7 +14,6 @@ export async function POST(request: Request) {
     }
 
     // 2. Acesso às Variáveis de Ambiente da Memed
-    // O seu código espera os nomes de variáveis corrigidos.
     const memedApiUrl = process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION;
     const memedApiKey = process.env.NEXT_PUBLIC_MEMED_API_KEY_HOMOLOGATION;
     const memedSecretKey = process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_HOMOLOGATION;
@@ -28,7 +26,6 @@ export async function POST(request: Request) {
 
     try {
         // 3. Montagem do Payload para a Requisição da Memed
-        // O external_id é o identificador único do usuário no seu sistema (o ID do Supabase).
         const payload = {
             data: {
                 type: 'usuarios',
