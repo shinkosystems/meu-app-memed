@@ -13,10 +13,10 @@ export async function getMemedToken() {
 
     // Verifica se o ambiente de produção está ativo
     const isProduction = process.env.NODE_ENV === 'production';
-
+    
     const baseUrl = isProduction
-        ? process.env.NEXT_PUBLIC_MEMED_API_URL_PRODUCTION + '/sinapse-prescricao/usuarios'
-        : process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION + '/sinapse-prescricao/usuarios';
+        ? process.env.MEMED_API_BASE_URL + '/sinapse-prescricao/usuarios' // Ou o nome que você usou para a URL de produção
+        : process.env.MEMED_API_BASE_URL + '/sinapse-prescricao/usuarios';
 
     const apiKey = isProduction
         ? process.env.NEXT_PUBLIC_MEMED_API_KEY_PRODUCTION!
