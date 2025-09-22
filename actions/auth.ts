@@ -7,29 +7,51 @@ export async function openMemedPanel(formData: FormData) {
 
     const userEmail = formData.get('email') as string;
 
+    // Use a lógica para alternar entre homologação e produção, se necessário
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const memedApiUrl = isProduction
+        ? process.env.NEXT_PUBLIC_MEMED_API_URL_PRODUCTION
+        : process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION;
+
+    const memedApiKey = isProduction
+        ? process.env.NEXT_PUBLIC_MEMED_API_KEY_PRODUCTION!
+        : process.env.NEXT_PUBLIC_MEMED_API_KEY_HOMOLOGATION!;
+
+    const memedSecretKey = isProduction
+        ? process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_PRODUCTION!
+        : process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_HOMOLOGATION!;
+
     try {
-        const response = await fetch(process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION + '/user', {
+        const response = await fetch(memedApiUrl + '/user', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': process.env.NEXT_PUBLIC_MEMED_API_KEY_HOMOLOGATION!,
-                'X-SECRET-KEY': process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_HOMOLOGATION!
+                'X-API-KEY': memedApiKey,
+                'X-SECRET-KEY': memedSecretKey
             },
             body: JSON.stringify({
                 'email': userEmail,
-                // Você pode precisar adicionar mais dados aqui, como 'name' ou 'document'
             })
         });
 
+        // Verifique se a resposta é OK antes de tentar ler o JSON
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Erro na requisição da Memed:', response.status, errorText);
+            throw new Error('Falha ao abrir painel da Memed');
+        }
+
         const data = await response.json();
 
-        if (response.ok) {
-            console.log('Usuário criado na Memed:', data);
-            // Aqui você vai receber uma URL de retorno para abrir o painel da Memed
-            redirect(data.memed_url); // Exemplo de como redirecionar para a URL
+        console.log('Usuário criado na Memed:', data);
+
+        // Use o redirecionamento com a URL retornada
+        if (data.memed_url) {
+            redirect(data.memed_url);
         } else {
-            console.error('Erro ao criar usuário na Memed:', data);
-            throw new Error('Falha ao abrir painel da Memed');
+            console.error('URL da Memed não encontrada na resposta:', data);
+            throw new Error('URL de redirecionamento da Memed não encontrada');
         }
 
     } catch (error) {
