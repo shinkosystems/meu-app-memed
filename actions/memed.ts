@@ -22,8 +22,8 @@ export async function getMemedToken() {
         : process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION;
 
     const memedApiKey = isProduction
-        ? process.env.NEXT_PUBLIC_API_KEY_PRODUCTION
-        : process.env.NEXT_PUBLIC_API_KEY_HOMOLOGATION;
+        ? process.env.NEXT_PUBLIC_MEMED_API_KEY_PRODUCTION
+        : process.env.NEXT_PUBLIC_MEMED_API_KEY_HOMOLOGATION;
 
     const memedSecretKey = isProduction
         ? process.env.NEXT_PUBLIC_MEMED_SECRET_KEY_PRODUCTION
