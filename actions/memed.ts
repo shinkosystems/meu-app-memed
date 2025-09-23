@@ -14,7 +14,19 @@ export async function getMemedToken() {
         return { token: null, error: 'User not authenticated' };
     }
 
-    // 2. Acesso às Variáveis de Ambiente da Memed
+    // 2. BUSCANDO OS DADOS DO CRM DA TABELA 'users'
+    const { data: userData, error: userError } = await supabase
+        .from('users') // Nome da sua tabela de usuários
+        .select('crm, crm_state')
+        .eq('email', user.email)
+        .single();
+
+    if (userError || !userData) {
+        console.error('Erro ao buscar dados do CRM:', userError);
+        return { token: null, error: 'Failed to retrieve CRM data' };
+    }
+
+    // 3. Acesso às Variáveis de Ambiente da Memed
     const isProduction = process.env.NODE_ENV === 'production';
 
     const memedApiUrl = isProduction
@@ -36,7 +48,7 @@ export async function getMemedToken() {
     }
 
     try {
-        // 3. Montagem do Payload para a Requisição da Memed
+        // 4. Montagem do Payload para a Requisição da Memed
         const payload = {
             data: {
                 type: 'usuarios',
@@ -45,14 +57,14 @@ export async function getMemedToken() {
                     nome: user.user_metadata.full_name || 'Usuário de Exemplo',
                     board: {
                         board_code: 'CRM',
-                        board_number: user.user_metadata.crm, // Usando o CRM do Supabase
-                        board_state: user.user_metadata.crm_state, // Usando o estado do CRM do Supabase
+                        board_number: userData.crm, // Usando o CRM da nova consulta
+                        board_state: userData.crm_state, // Usando o estado do CRM da nova consulta
                     },
                 },
             },
         };
 
-        // 4. Requisição à API da Memed
+        // ... o restante do código que faz a requisição para a Memed ...
         const response = await fetch(`${memedApiUrl}/sinapse-prescricao/usuarios`, {
             method: 'POST',
             headers: {
@@ -64,7 +76,6 @@ export async function getMemedToken() {
             body: JSON.stringify(payload),
         });
 
-        // 5. Tratamento da Resposta
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Erro na requisição da Memed:', response.status, errorText);
