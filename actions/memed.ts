@@ -45,8 +45,8 @@ export async function getMemedToken() {
                     nome: user.user_metadata.full_name || 'Usuário de Exemplo',
                     board: {
                         board_code: 'CRM',
-                        board_number: Math.floor(Math.random() * 900000) + 100000,
-                        board_state: 'SP',
+                        board_number: user.user_metadata.crm, // Usando o CRM do Supabase
+                        board_state: user.user_metadata.crm_state, // Usando o estado do CRM do Supabase
                     },
                 },
             },
