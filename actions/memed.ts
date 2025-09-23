@@ -30,7 +30,7 @@ export async function getMemedToken() {
     const isProduction = process.env.NODE_ENV === 'production';
 
     const memedApiUrl = isProduction
-        ? process.env.NEXT_PUBLIC_MEMED_API_URL_PRODUCTION
+        ? process.env.NEXT_PUBLIC_MEMED_API_URL_PRODUCTION!
         : process.env.NEXT_PUBLIC_MEMED_API_URL_HOMOLOGATION;
 
     const memedApiKey = isProduction
